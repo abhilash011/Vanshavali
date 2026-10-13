@@ -1,0 +1,469 @@
+openapi: 3.0.3
+info:
+  title: Vanshavali API
+  description: >
+    Hindu Community & Family Tree Portal REST API.
+    All clients (web + mobile) consume this single API over HTTPS/JSON.
+  version: 1.0.0
+  contact:
+    name: Vanshavali Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development (PHP built-in server)
+  - url: http://localhost/Vanshavali/vanshavali-api/public/api/v1
+    description: Local development (XAMPP Apache)
+
+tags:
+  - name: Health
+    description: Service health check
+  - name: Auth
+    description: Registration, login, token management
+  - name: Members
+    description: Family member CRUD
+  - name: Family Tree
+    description: Graph-based family tree queries
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 1.0.0
+                  time:
+                    type: string
+                    format: date-time
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 12
+                  maxLength: 72
+                community_id:
+                  type: integer
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '409':
+          description: Duplicate account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and get tokens
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token:
+                            type: string
+                          refresh_token:
+                            type: string
+                          user:
+                            $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke refresh token
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Logged out
+
+  /members:
+    get:
+      tags: [Members]
+      summary: List all members
+      operationId: listMembers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Members list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Member'
+    post:
+      tags: [Members]
+      summary: Create a new member
+      operationId: createMember
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberInput'
+      responses:
+        '201':
+          description: Member created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /members/{id}:
+    get:
+      tags: [Members]
+      summary: Get a single member with relationships
+      operationId: getMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Member details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Not found
+    put:
+      tags: [Members]
+      summary: Update a member
+      operationId: updateMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberInput'
+      responses:
+        '200':
+          description: Member updated
+    delete:
+      tags: [Members]
+      summary: Delete a member
+      operationId: deleteMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Member deleted
+
+  /families/{id}/tree:
+    get:
+      tags: [Family Tree]
+      summary: Get family tree graph (nodes + edges)
+      operationId: getFamilyTree
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Root member ID
+      responses:
+        '200':
+          description: Family tree graph
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          nodes:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Member'
+                          edges:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Relationship'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data: {}
+        meta: {}
+        error:
+          type: 'null'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: 'null'
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            fields:
+              type: object
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [visitor, member, family_coordinator, content_moderator, community_admin, platform_admin]
+        community_id:
+          type: integer
+          nullable: true
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+        birth_year:
+          type: integer
+          nullable: true
+        death_year:
+          type: integer
+          nullable: true
+        relationship_label:
+          type: string
+          nullable: true
+        profile_image:
+          type: string
+          nullable: true
+        tags:
+          type: string
+          description: JSON-encoded array of tags
+          nullable: true
+        order_id:
+          type: integer
+          nullable: true
+        visibility:
+          type: string
+          enum: [private, family_only, community_only, public]
+
+    MemberInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+        birth_year:
+          type: integer
+        death_year:
+          type: integer
+        relationship_label:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        order_id:
+          type: integer
+        fid:
+          type: integer
+          description: Father member ID
+        mid:
+          type: integer
+          description: Mother member ID
+        pids:
+          type: array
+          items:
+            type: integer
+          description: Partner member IDs
+
+    Relationship:
+      type: object
+      properties:
+        id:
+          type: integer
+        member_id:
+          type: integer
+        related_member_id:
+          type: integer
+        relationship_type:
+          type: string
+          enum: [parent, child, spouse, sibling, guardian, adopted, step, unknown]
+        verification_status:
+          type: string
+          enum: [proposed, approved, rejected]
+        effective_date:
+          type: string
+          format: date
+          nullable: true

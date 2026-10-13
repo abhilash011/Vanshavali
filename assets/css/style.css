@@ -1,0 +1,125 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fffefc;
+    color: #555;
+}
+
+.text-gold {
+    color: #d4af37;
+}
+
+.hero {
+    background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
+                url('../images/goldsmith-bg.jpg') no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-gold {
+    background-color: #d4af37;
+    color: #fff;
+}
+
+.btn-gold:hover {
+    background-color: #bfa335;
+}
+
+.btn-outline-gold {
+    border: 2px solid #d4af37;
+    color: #d4af37;
+}
+
+.btn-outline-gold:hover {
+    background-color: #d4af37;
+    color: white;
+}
+
+.feature-card, .event-card {
+    border: 2px solid #d4af37;
+    background: #fff;
+    transition: transform 0.3s ease;
+    border-radius: 15px;
+}
+
+.feature-card:hover, .event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.1);
+}
+
+.testimonial {
+    padding: 30px;
+}
+
+.floating-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    padding: 12px 20px;
+    border-radius: 50px;
+}
+.testimonial-slider {
+    margin-top: 40px;
+}
+
+.testimonial-card {
+    background: #ffffff;
+    border: 2px solid #d4af37;
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    text-align: center;
+    position: relative;
+}
+
+.testimonial-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 8px 25px rgba(0,0,0,0.15);
+    border-color: #cba637;
+}
+
+.testimonial-inner i {
+    opacity: 0.2;
+    position: absolute;
+    top: -30px;
+    left: 20px;
+}
+
+.testimonial-inner p {
+    font-style: italic;
+    font-size: 1.1rem;
+    margin-top: 30px;
+}
+
+.testimonial-inner h6 {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Sparkle particle style */
+.glitter {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #ffd700 0%, #ffffff 40%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.9;
+  filter: blur(1px);
+  animation: glitter-fade 1.2s forwards;
+  z-index: 9999;
+}
+
+@keyframes glitter-fade {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}

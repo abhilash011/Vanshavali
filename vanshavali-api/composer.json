@@ -1,0 +1,33 @@
+{
+    "name": "vanshavali/api",
+    "description": "Vanshavali — Hindu Community & Family Tree Portal REST API",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "slim/slim": "^4.14",
+        "slim/psr7": "^1.7",
+        "vlucas/phpdotenv": "^5.6",
+        "firebase/php-jwt": "^6.10",
+        "monolog/monolog": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vanshavali\\": "src/"
+        }
+    },
+    "scripts": {
+        "start": "php -S localhost:8080 -t public",
+        "migrate": "php migrations/migrate.php",
+        "seed": "php migrations/seed.php"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "ignore": ["PKSA-y2cr-5h3j-g3ys"]
+            }
+        }
+    }
+}

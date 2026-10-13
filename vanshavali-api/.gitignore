@@ -1,0 +1,9 @@
+/vendor/
+.env
+/uploads/*
+!/uploads/.gitkeep
+/logs/*
+!/logs/.gitkeep
+composer.phar
+*.cache
+.phpunit.result.cache
